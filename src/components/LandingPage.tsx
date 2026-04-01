@@ -52,6 +52,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           whileHover={{ scale: 1.05, textShadow: "0px 0px 8px rgb(0,212,255)" }}
           whileTap={{ scale: 0.95 }}
           onClick={onEnter}
+          aria-label="Enter the NEXUS drone control system"
           className="mt-4 md:mt-8 px-8 py-3 md:px-10 md:py-4 font-orbitron font-bold tracking-[0.2em] text-[#00D4FF] border justify-center border-[#00D4FF]/40 bg-[#00D4FF]/10 rounded-lg shadow-[0_0_20px_rgba(0,212,255,0.2)] hover:bg-[#00D4FF]/20 hover:border-[#00D4FF] transition-all duration-300 neon-border-blue"
         >
            ENTER SYSTEM

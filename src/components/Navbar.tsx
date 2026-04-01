@@ -5,13 +5,14 @@ export function Navbar() {
   const location = useLocation();
 
   return (
-    <motion.nav 
+    <motion.nav
       initial={{ y: -50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       className="absolute top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between pointer-events-auto"
+      aria-label="Main navigation"
     >
       {/* Brand */}
-      <Link to="/" className="flex items-center gap-4 group">
+      <Link to="/" className="flex items-center gap-4 group" aria-label="NEXUS home">
         <div className="w-8 h-8 rounded border-2 border-[#00D4FF] flex items-center justify-center bg-[#00D4FF]/20 group-hover:bg-[#00D4FF]/40 transition-colors shadow-[0_0_10px_#00D4FF]">
           <span className="w-4 h-4 rounded-full border border-white" />
         </div>

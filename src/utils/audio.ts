@@ -50,6 +50,23 @@ export class DroneAudio {
       this.gainNode.gain.linearRampToValueAtTime(0.15, this.ctx.currentTime + 0.5);
     }
   }
+
+  public dispose() {
+    if (this.oscillator) {
+      this.oscillator.stop();
+      this.oscillator.disconnect();
+      this.oscillator = null;
+    }
+    if (this.gainNode) {
+      this.gainNode.disconnect();
+      this.gainNode = null;
+    }
+    if (this.ctx) {
+      this.ctx.close();
+      this.ctx = null;
+    }
+    this.isPlaying = false;
+  }
 }
 
 export const droneAudio = new DroneAudio();

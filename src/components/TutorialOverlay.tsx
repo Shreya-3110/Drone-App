@@ -53,6 +53,7 @@ export function TutorialOverlay({ onStart }: TutorialProps) {
         >
           <button
             onClick={onStart}
+            aria-label="Start flying the drone"
             className="w-full px-6 py-4 font-orbitron text-sm md:text-lg tracking-[0.2em] text-black bg-gradient-to-r from-[#00FF9C] to-[#00D4FF] hover:scale-105 rounded-xl font-bold shadow-[0_0_20px_#00FF9C] transition-all"
           >
             START FLYING!

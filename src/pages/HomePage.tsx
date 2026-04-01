@@ -38,7 +38,7 @@ export function HomePage() {
             transition={{ delay: 0.6 }}
             className="flex gap-4 mt-6"
           >
-            <Link to="/portal" className="px-6 py-3 md:px-8 bg-[#00D4FF]/20 border border-[#00D4FF] text-[#00D4FF] font-orbitron text-xs md:text-sm tracking-widest hover:bg-[#00D4FF] hover:text-black transition-colors rounded shadow-[0_0_15px_rgba(0,212,255,0.4)]">
+            <Link to="/portal" aria-label="Enter the secure portal" className="px-6 py-3 md:px-8 bg-[#00D4FF]/20 border border-[#00D4FF] text-[#00D4FF] font-orbitron text-xs md:text-sm tracking-widest hover:bg-[#00D4FF] hover:text-black transition-colors rounded shadow-[0_0_15px_rgba(0,212,255,0.4)]">
               ENTER SECURE PORTAL
             </Link>
           </motion.div>
