@@ -1,87 +1,72 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Canvas } from '@react-three/fiber';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+
 import { DroneScene } from './components/DroneScene';
-import { Dashboard } from './components/Dashboard';
+import { Navbar } from './components/Navbar';
+import { HomePage } from './pages/HomePage';
+import { PortalPage } from './pages/PortalPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { droneAudio } from './utils/audio';
 
-function App() {
-  const [stage, setStage] = useState<'initial' | 'entering' | 'dashboard'>('initial');
-  const [audioEnabled, setAudioEnabled] = useState(false);
+function AppContent() {
+  const location = useLocation();
+  const [sceneState, setSceneState] = useState<'parked' | 'arriving' | 'arrived'>('parked');
 
   useEffect(() => {
-    // Stage 1: Initial black screen (2 seconds) then start enter
-    const timer1 = setTimeout(() => {
-      setStage('entering');
-    }, 2000);
-
-    return () => clearTimeout(timer1);
-  }, []);
-
-  useEffect(() => {
-    if (stage === 'entering') {
-      // Drone fly-in takes ~4 seconds
-      const timer2 = setTimeout(() => {
-        setStage('dashboard');
-      }, 4000);
-      return () => clearTimeout(timer2);
+    // If we land on home or portal, keep the drone parked and ensure audio is cut
+    if (location.pathname === '/' || location.pathname === '/portal') {
+      setSceneState('parked');
+      droneAudio.stop();
     }
-  }, [stage]);
-
-  // Handle interaction to unlock audio
-  useEffect(() => {
-    const handleInteraction = () => {
-      if (!audioEnabled && stage !== 'initial') {
-        droneAudio.init();
-        droneAudio.play();
-        setAudioEnabled(true);
-      }
-    };
-    
-    window.addEventListener('click', handleInteraction);
-    return () => window.removeEventListener('click', handleInteraction);
-  }, [audioEnabled, stage]);
+  }, [location.pathname]);
 
   return (
-    <div className="w-screen h-screen bg-[#0A0A0A] overflow-hidden relative cursor-default text-white">
+    <div className="w-screen h-screen bg-[#0A0A0A] overflow-hidden relative cursor-default text-white flex flex-col">
       
-      {/* 3D Canvas Background */}
-      <div className="absolute inset-0 z-0 bg-[#0A0A0A]">
+      {/* Global 3D Background persistently rendered across routes */}
+      <div className="absolute inset-0 z-0 bg-[#0A0A0A] pointer-events-none">
         <Canvas camera={{ position: [0, 2, 8], fov: 45 }}>
-          {stage !== 'initial' && <DroneScene isArrived={stage === 'dashboard'} />}
+          <DroneScene 
+            isArrived={sceneState === 'arrived'} 
+            isParked={sceneState === 'parked'} 
+          />
         </Canvas>
       </div>
 
-      {/* Intro Black Screen Overlay */}
-      <AnimatePresence>
-        {stage === 'initial' && (
-          <motion.div 
-            className="absolute inset-0 bg-black z-50 flex flex-col items-center justify-center"
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: 'easeInOut' }}
-          >
-            <p className="text-white/40 font-orbitron tracking-[0.5em] text-sm animate-pulse">INITIATING CONTROL SYSTEM</p>
-            <p className="text-white/20 font-inter text-xs mt-4">ESTABLISHING CONNECTION...</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Conditionally rendered Navbar logic */}
+      {location.pathname !== '/system' && <Navbar />}
 
-      {/* Click To Start Audio Reminder (Optional) */}
-      {!audioEnabled && stage !== 'initial' && (
-        <div className="absolute top-4 right-4 z-[60] text-xs font-inter text-white/50 tracking-widest pointer-events-none animate-pulse">
-          CLICK ANYWHERE TO ENABLE AUDIO
-        </div>
-      )}
-
-      {/* Main HUD Dashboard */}
-      <AnimatePresence>
-        {stage === 'dashboard' && (
-           <Dashboard />
-        )}
-      </AnimatePresence>
-
+      {/* Router Content Overlay */}
+      <div className="flex-1 relative z-10 w-full h-full">
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/portal" element={<PortalPage />} />
+            <Route 
+              path="/system" 
+              element={
+                <DashboardPage 
+                  onArriving={() => setSceneState('arriving')} 
+                  onArrived={() => setSceneState('arrived')} 
+                  onDisconnected={() => setSceneState('parked')}
+                />
+              } 
+            />
+          </Routes>
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
 
-export default App
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  );
+}
+
+export default App;

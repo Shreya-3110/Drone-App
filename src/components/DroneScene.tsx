@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { Float, Environment, ContactShadows, Stars } from '@react-three/drei';
 import * as THREE from 'three';
 
-export function DroneScene({ isArrived }: { isArrived: boolean }) {
+export function DroneScene({ isArrived, isParked }: { isArrived: boolean, isParked?: boolean }) {
   const droneRef = useRef<THREE.Group>(null);
   
   // Custom rotation for container to give cinematic entry
@@ -11,7 +11,11 @@ export function DroneScene({ isArrived }: { isArrived: boolean }) {
 
   useFrame((state, delta) => {
     if (droneRef.current && containerRef.current) {
-      if (!isArrived) {
+      if (isParked) {
+        // Stay parked far away and rotate gracefully
+        droneRef.current.position.z = THREE.MathUtils.lerp(droneRef.current.position.z, -30, delta * 2);
+        containerRef.current.rotation.y = THREE.MathUtils.lerp(containerRef.current.rotation.y, Math.PI / 6, delta * 2);
+      } else if (!isArrived) {
         // Fly in animation from far away
         droneRef.current.position.z = THREE.MathUtils.lerp(droneRef.current.position.z, 0, delta * 0.8);
         containerRef.current.rotation.y = THREE.MathUtils.lerp(containerRef.current.rotation.y, 0, delta * 0.5);

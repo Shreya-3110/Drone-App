@@ -10,9 +10,9 @@ export class DroneAudio {
     this.oscillator = this.ctx.createOscillator();
     this.gainNode = this.ctx.createGain();
 
-    // Create a low hum (drone sound)
-    this.oscillator.type = 'sawtooth';
-    this.oscillator.frequency.value = 50; // Low frequency
+    // Create a smooth, relaxing sci-fi reactor hum (audible on laptops)
+    this.oscillator.type = 'triangle';
+    this.oscillator.frequency.value = 150; // Smooth midrange frequency
 
     this.oscillator.connect(this.gainNode);
     this.gainNode.connect(this.ctx.destination);
@@ -24,8 +24,8 @@ export class DroneAudio {
   public play() {
     if (!this.ctx || this.isPlaying) return;
     this.ctx.resume();
-    // Fade in over 3 seconds
-    this.gainNode?.gain.linearRampToValueAtTime(0.3, this.ctx.currentTime + 3);
+    // Fade in softly over 3 seconds
+    this.gainNode?.gain.linearRampToValueAtTime(0.15, this.ctx.currentTime + 3);
     this.isPlaying = true;
   }
 
@@ -37,9 +37,18 @@ export class DroneAudio {
   
   public setIntensity(normalizedValue: number) {
     if (!this.ctx || !this.isPlaying || !this.gainNode || !this.oscillator) return;
-    // Base frequency 50, up to 150 based on intensity
-    this.oscillator.frequency.setTargetAtTime(50 + normalizedValue * 100, this.ctx.currentTime, 0.1);
+    // Base frequency 150, up to 300 based on intensity
+    this.oscillator.frequency.setTargetAtTime(150 + normalizedValue * 150, this.ctx.currentTime, 0.1);
     this.gainNode.gain.setTargetAtTime(0.1 + normalizedValue * 0.4, this.ctx.currentTime, 0.1);
+  }
+
+  public setMuted(muted: boolean) {
+    if (!this.ctx || !this.gainNode) return;
+    if (muted) {
+      this.gainNode.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.5);
+    } else if (this.isPlaying) {
+      this.gainNode.gain.linearRampToValueAtTime(0.15, this.ctx.currentTime + 0.5);
+    }
   }
 }
 

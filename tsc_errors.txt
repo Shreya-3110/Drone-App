@@ -1,0 +1,5 @@
+src/components/MiniMap.tsx(12,19): error TS6133: 'prev' is declared but its value is never read.
+src/components/StatusHeader.tsx(7,10): error TS6133: 'time' is declared but its value is never read.
+src/components/TelemetryPanel.tsx(2,16): error TS6133: 'Compass' is declared but its value is never read.
+src/components/TelemetryPanel.tsx(2,25): error TS6133: 'ArrowUp' is declared but its value is never read.
+src/components/TelemetryPanel.tsx(2,34): error TS6133: 'Zap' is declared but its value is never read.

@@ -1,73 +1,69 @@
 import { motion } from 'framer-motion';
-import { Activity, Thermometer } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export function TelemetryPanel() {
-  const [cpuHist, setCpuHist] = useState<number[]>(Array(20).fill(50));
-  
+export function TelemetryPanel({ isConnected }: { isConnected: boolean }) {
+  const [data, setData] = useState({
+    height: 0,
+    speed: 0,
+    targetDist: 0,
+    direction: 0,
+    climbRate: 0,
+    homeDist: 0,
+  });
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCpuHist(prev => [...prev.slice(1), 30 + Math.random() * 50]);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+    if (!isConnected) return;
+    // Simulate real drone metrics (like ArduPilot Mission Planner output)
+    const interval = setInterval(() => {
+      const time = Date.now() / 2000;
+      setData({
+        height: 120 + Math.sin(time) * 10,
+        speed: 45 + Math.cos(time * 0.8) * 5,
+        targetDist: 1450 + Math.sin(time * 0.5) * 50,
+        direction: (145 + time * 5) % 360,
+        climbRate: Math.sin(time) * 2.5,
+        homeDist: 850 + Math.cos(time * 0.4) * 40,
+      });
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isConnected]);
+
+  const metrics = [
+    { label: "Height (m)", value: isConnected ? Math.abs(data.height).toFixed(1) : "--", color: "text-[#B026FF]", shadow: "drop-shadow-[0_0_10px_rgba(176,38,255,0.4)]" },
+    { label: "Speed (m/s)", value: isConnected ? Math.abs(data.speed).toFixed(1) : "--", color: "text-[#FF8A00]", shadow: "drop-shadow-[0_0_10px_rgba(255,138,0,0.4)]" },
+    { label: "Target Dist (m)", value: isConnected ? Math.max(0, data.targetDist).toFixed(1) : "--", color: "text-[#FF0055]", shadow: "drop-shadow-[0_0_10px_rgba(255,0,85,0.4)]" },
+    { label: "Direction (°)", value: isConnected ? Math.round(data.direction).toString() : "--", color: "text-[#00FF9C]", shadow: "drop-shadow-[0_0_10px_rgba(0,255,156,0.4)]" },
+    { label: "Climb Rate", value: isConnected ? data.climbRate.toFixed(1) : "--", color: "text-[#FFE600]", shadow: "drop-shadow-[0_0_10px_rgba(255,230,0,0.4)]" },
+    { label: "Home Dist (m)", value: isConnected ? data.homeDist.toFixed(1) : "--", color: "text-[#00D4FF]", shadow: "drop-shadow-[0_0_10px_rgba(0,212,255,0.4)]" }
+  ];
 
   return (
     <motion.div 
       initial={{ opacity: 0, x: -50 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.6, duration: 0.8 }}
-      className="glass-panel p-5 rounded-xl flex flex-col gap-6"
+      transition={{ delay: 0.4, duration: 0.8 }}
+      className={`glass-panel p-4 md:p-5 rounded-xl flex flex-col gap-4 w-full min-h-[400px] h-full pointer-events-auto border transition-colors duration-1000 ${isConnected ? 'border-white/10 bg-black/40' : 'border-white/5 bg-black/80'}`}
     >
-      <div className="flex items-center gap-2 border-b border-white/10 pb-2">
-        <Activity className="w-4 h-4 text-[#00D4FF]" />
-        <h2 className="font-orbitron text-sm tracking-widest text-white/90">SYS_TELEMETRY</h2>
+      <div className="flex items-center justify-between border-b border-white/10 pb-2 shrink-0">
+        <div className="flex items-center gap-2">
+          <Info className="w-4 h-4 md:w-5 md:h-5 text-white/50" />
+          <h2 className="font-orbitron font-bold tracking-widest text-white/50 text-xs md:text-sm uppercase">
+            Flight Info
+          </h2>
+        </div>
+        {!isConnected && <span className="text-[10px] md:text-xs font-orbitron text-white/30 tracking-widest animate-pulse">NO DATA</span>}
       </div>
 
-      {/* Battery */}
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-end font-orbitron">
-          <span className="text-xs text-white/50 tracking-wider">BATTERY (LIPO 6S)</span>
-          <span className="text-lg text-[#00FF9C] tracking-wide font-bold">84%</span>
-        </div>
-        <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden border border-white/5">
-          <motion.div 
-            className="h-full bg-gradient-to-r from-green-600 to-[#00FF9C] shadow-[0_0_10px_#00FF9C]" 
-            initial={{ width: 0 }}
-            animate={{ width: '84%' }}
-            transition={{ duration: 1.5, delay: 1 }}
-          />
-        </div>
-      </div>
-
-      {/* CPU Usage Chart */}
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-end font-orbitron">
-          <span className="text-xs text-white/50 tracking-wider">CORE LOAD</span>
-          <span className="text-sm text-[#00D4FF] tracking-wide">{Math.round(cpuHist[19])}%</span>
-        </div>
-        <div className="h-24 w-full flex items-end gap-1 border-b border-[#00D4FF]/20 pb-1 pt-4 relative">
-          {/* Background grid lines */}
-          <div className="absolute inset-0 bg-[linear-gradient(transparent_9px,rgba(255,255,255,0.05)_10px)] bg-[length:100%_10px] pointer-events-none" />
-          
-          {cpuHist.map((val, i) => (
-            <motion.div 
-              key={i}
-              className="flex-1 bg-[#00D4FF]/60 rounded-t-sm relative shadow-[#00D4FF]/20 shadow-[0_0_5px]"
-              animate={{ height: `${val}%` }}
-              transition={{ type: 'tween', duration: 0.5 }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Temp */}
-      <div className="flex items-center justify-between border border-white/5 bg-white/5 p-3 rounded-lg hover:bg-white/10 transition-colors">
-        <div className="flex gap-2 items-center">
-          <Thermometer className="w-4 h-4 text-orange-400" />
-          <span className="font-orbitron text-xs text-white/70 tracking-widest">MOTOR TEMP</span>
-        </div>
-        <span className="font-orbitron font-bold text-sm text-orange-400 hover:text-orange-300">42°C</span>
+      <div className="flex-1 grid grid-cols-2 gap-3 md:gap-4 content-center opacity-100 transition-opacity duration-1000">
+        {metrics.map((m, i) => (
+          <div key={i} className={`bg-black/60 border rounded-2xl p-3 md:p-4 flex flex-col items-center justify-center relative overflow-hidden group transition-all duration-500 shadow-inner ${isConnected ? 'border-white/5 hover:bg-white/5' : 'border-black opacity-50'}`}>
+            <span className="font-inter text-white/40 text-[9px] md:text-[11px] tracking-widest uppercase mb-1 md:mb-2">{m.label}</span>
+            <span className={`font-orbitron text-2xl md:text-4xl font-bold tracking-wider tabular-nums transition-colors duration-1000 ${isConnected ? `${m.color} ${m.shadow}` : 'text-white/20'}`}>
+              {m.value}
+            </span>
+          </div>
+        ))}
       </div>
     </motion.div>
   );
