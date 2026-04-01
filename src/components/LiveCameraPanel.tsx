@@ -22,6 +22,8 @@ export function LiveCameraPanel({ isScanning = true, isConnected }: { isScanning
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.8, duration: 1 }}
+      role="region"
+      aria-label="Live drone camera feed"
       className={`glass-panel p-2 md:p-3 rounded-xl flex flex-col w-full h-full relative overflow-hidden group border transition-colors duration-1000 ${isConnected ? 'border-[#00D4FF]/20' : 'border-white/5 opacity-90'}`}
     >
       <div className="absolute top-4 md:top-6 left-4 md:left-6 flex items-center gap-2 z-[400] bg-black/50 px-3 py-1.5 md:px-4 md:py-2 rounded border border-white/10 backdrop-blur-md">

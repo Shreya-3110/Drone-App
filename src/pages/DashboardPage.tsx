@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dashboard } from '../components/Dashboard';
 import { droneAudio } from '../utils/audio';
 import { AnimatePresence, motion } from 'framer-motion';
+import { CONNECTION_CONFIG } from '../config/dashboard';
 
 interface DashboardPageProps {
   onArriving: () => void;
@@ -14,27 +15,36 @@ export function DashboardPage({ onArriving, onArrived, onDisconnected }: Dashboa
   // 'disconnected' (initial state waiting for user) -> 'connecting' (boot sequence) -> 'connected' (active telemetry)
   const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
   const [isMuted, setIsMuted] = useState(false);
+  const isMutedRef = useRef(isMuted);
+  isMutedRef.current = isMuted;
 
   useEffect(() => {
     if (connectionState === 'connecting') {
       droneAudio.init();
       droneAudio.play();
-      droneAudio.setMuted(isMuted);
+      droneAudio.setMuted(isMutedRef.current);
 
       const timer1 = setTimeout(() => {
         setConnectionState('connected');
-        onArrived(); 
+        onArrived();
         droneAudio.stop(); // Automatically silence the hum once the drone arrives
-      }, 4000); // 4-second boot sequence
-      
+      }, CONNECTION_CONFIG.bootSequenceDurationMs);
+
       onArriving(); // Tell App.tsx to start drone fly-in immediately when CONNECT is clicked
-      
+
       return () => clearTimeout(timer1);
     } else if (connectionState === 'disconnected') {
       onDisconnected();
       droneAudio.stop();
     }
-  }, [connectionState, onArrived, onArriving, onDisconnected]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [connectionState, onArrived, onArriving, onDisconnected]);
+
+  // Clean up audio resources when the page unmounts
+  useEffect(() => {
+    return () => {
+      droneAudio.dispose();
+    };
+  }, []);
 
   const handleConnect = () => {
     setConnectionState('connecting');

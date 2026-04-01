@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Float, Environment, ContactShadows, Stars } from '@react-three/drei';
 import * as THREE from 'three';
+import { SCENE_CONFIG } from '../config/dashboard';
 
 export function DroneScene({ isArrived, isParked }: { isArrived: boolean, isParked?: boolean }) {
   const droneRef = useRef<THREE.Group>(null);
@@ -41,8 +42,8 @@ export function DroneScene({ isArrived, isParked }: { isArrived: boolean, isPark
       <directionalLight position={[-5, 10, -5]} intensity={1.5} color="#7B61FF" />
 
       {/* Fog and stars to add to the cinematic vibe */}
-      <fog attach="fog" args={['#0A0A0A', 10, 80]} />
-      <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
+      <fog attach="fog" args={[SCENE_CONFIG.fog.color, SCENE_CONFIG.fog.near, SCENE_CONFIG.fog.far]} />
+      <Stars radius={SCENE_CONFIG.stars.radius} depth={SCENE_CONFIG.stars.depth} count={SCENE_CONFIG.stars.count} factor={SCENE_CONFIG.stars.factor} saturation={0} fade speed={1} />
 
       <group ref={containerRef} rotation={[0, Math.PI / 4, 0]}>
         <Float speed={2} rotationIntensity={0.2} floatIntensity={1}>
